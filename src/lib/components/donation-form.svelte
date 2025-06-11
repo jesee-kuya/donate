@@ -8,28 +8,46 @@
 	let phoneNumber = $state('');
 	let message = $state('');
 	let isProcessing = $state(false);
-	let donationStatus;
+
+	type DonationStatus = {
+		type: 'success' | 'error';
+		message: string;
+	} | null;
+
+	let donationStatus = $state<DonationStatus>(null);
 
 	const predefinedAmounts = [500, 1000, 2500, 5000];
 
 	async function handleDonation() {
 		if (!amount || !phoneNumber) {
-			donationStatus = { type: 'error', message: 'Please fill in all required fields' };
+			donationStatus = {
+				type: 'error',
+				message: 'Please fill in all required fields'
+			};
 			return;
 		}
 
 		if (!/^2547\d{8}$/.test(phoneNumber)) {
-			donationStatus = { type: 'error', message: 'Invalid phone number format. Use 2547XXXXXXXX.' };
+			donationStatus = {
+				type: 'error',
+				message: 'Invalid phone number format. Use 2547XXXXXXXX.'
+			};
 			return;
 		}
 
 		if (parseFloat(amount) < 10) {
-			donationStatus = { type: 'error', message: 'Minimum donation amount is KES 10' };
+			donationStatus = {
+				type: 'error',
+				message: 'Minimum donation amount is KES 10'
+			};
 			return;
 		}
 
 		if (!project?.id) {
-			donationStatus = { type: 'error', message: 'Invalid project selected.' };
+			donationStatus = {
+				type: 'error',
+				message: 'Invalid project selected.'
+			};
 			return;
 		}
 
@@ -79,10 +97,11 @@
 		}
 	}
 
-	function setAmount(value) {
+	function setAmount(value: number) {
 		amount = value.toString();
 	}
 </script>
+
 
 <div class="space-y-4">
 	<h3 class="text-lg font-semibold">Make a Donation</h3>
