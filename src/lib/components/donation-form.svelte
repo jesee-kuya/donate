@@ -8,7 +8,7 @@
 	let phoneNumber = $state('');
 	let message = $state('');
 	let isProcessing = $state(false);
-	let donationStatus = $state(null);
+	let donationStatus;
 
 	const predefinedAmounts = [500, 1000, 2500, 5000];
 
@@ -18,8 +18,18 @@
 			return;
 		}
 
+		if (!/^2547\d{8}$/.test(phoneNumber)) {
+			donationStatus = { type: 'error', message: 'Invalid phone number format. Use 2547XXXXXXXX.' };
+			return;
+		}
+
 		if (parseFloat(amount) < 10) {
 			donationStatus = { type: 'error', message: 'Minimum donation amount is KES 10' };
+			return;
+		}
+
+		if (!project?.id) {
+			donationStatus = { type: 'error', message: 'Invalid project selected.' };
 			return;
 		}
 
@@ -27,8 +37,7 @@
 		donationStatus = null;
 
 		try {
-			// Create donation record
-			const donation = db.donations.create({
+			const donation = await db.donations.create({
 				project_id: project.id,
 				amount: parseFloat(amount),
 				phone_number: phoneNumber,
@@ -36,7 +45,6 @@
 				status: 'pending'
 			});
 
-			// Initiate Mpesa payment
 			const mpesaResponse = await mpesa.initiateSTKPush(
 				phoneNumber,
 				parseFloat(amount),
@@ -45,29 +53,26 @@
 			);
 
 			if (mpesaResponse.ResponseCode === '0') {
-				// Update project amount (in real app, do this after payment confirmation)
-				db.projects.updateAmount(project.id, parseFloat(amount));
-				
-				donationStatus = { 
-					type: 'success', 
-					message: 'Payment request sent! Please check your phone and enter your Mpesa PIN.' 
+				donationStatus = {
+					type: 'success',
+					message: 'Payment request sent! Please check your phone and enter your Mpesa PIN.'
 				};
-				
-				// Reset form
+
+				// Optional reset
 				amount = '';
 				phoneNumber = '';
 				message = '';
 			} else {
-				donationStatus = { 
-					type: 'error', 
-					message: 'Payment failed. Please try again.' 
+				donationStatus = {
+					type: 'error',
+					message: 'Payment failed. Please try again.'
 				};
 			}
 		} catch (error) {
 			console.error('Donation error:', error);
-			donationStatus = { 
-				type: 'error', 
-				message: 'An error occurred. Please try again.' 
+			donationStatus = {
+				type: 'error',
+				message: 'An error occurred. Please try again.'
 			};
 		} finally {
 			isProcessing = false;
@@ -81,13 +86,16 @@
 
 <div class="space-y-4">
 	<h3 class="text-lg font-semibold">Make a Donation</h3>
-	
+
 	<!-- Predefined Amounts -->
 	<div class="grid grid-cols-2 gap-2">
 		{#each predefinedAmounts as presetAmount}
 			<button
 				onclick={() => setAmount(presetAmount)}
-				class="p-2 border rounded-lg hover:bg-gray-50 transition-colors {amount === presetAmount.toString() ? 'border-blue-500 bg-blue-50' : 'border-gray-300'}"
+				class="rounded-lg border p-2 transition-colors hover:bg-gray-50 {amount ===
+				presetAmount.toString()
+					? 'border-blue-500 bg-blue-50'
+					: 'border-gray-300'}"
 			>
 				KES {presetAmount.toLocaleString()}
 			</button>
@@ -96,7 +104,7 @@
 
 	<!-- Custom Amount -->
 	<div>
-		<label for="amount" class="block text-sm font-medium text-gray-700 mb-1">
+		<label for="amount" class="mb-1 block text-sm font-medium text-gray-700">
 			Custom Amount (KES)
 		</label>
 		<input
@@ -105,13 +113,13 @@
 			bind:value={amount}
 			placeholder="Enter amount"
 			min="10"
-			class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+			class="w-full rounded-lg border border-gray-300 p-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
 		/>
 	</div>
 
 	<!-- Phone Number -->
 	<div>
-		<label for="phone" class="block text-sm font-medium text-gray-700 mb-1">
+		<label for="phone" class="mb-1 block text-sm font-medium text-gray-700">
 			Mpesa Phone Number *
 		</label>
 		<input
@@ -119,14 +127,14 @@
 			type="tel"
 			bind:value={phoneNumber}
 			placeholder="254712345678"
-			class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+			class="w-full rounded-lg border border-gray-300 p-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
 		/>
-		<p class="text-xs text-gray-500 mt-1">Format: 254XXXXXXXXX</p>
+		<p class="mt-1 text-xs text-gray-500">Format: 254XXXXXXXXX</p>
 	</div>
 
 	<!-- Optional Message -->
 	<div>
-		<label for="message" class="block text-sm font-medium text-gray-700 mb-1">
+		<label for="message" class="mb-1 block text-sm font-medium text-gray-700">
 			Message (Optional)
 		</label>
 		<textarea
@@ -134,13 +142,17 @@
 			bind:value={message}
 			placeholder="Leave an encouraging message..."
 			rows="3"
-			class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+			class="w-full rounded-lg border border-gray-300 p-3 focus:border-blue-500 focus:ring-2 focus:ring-blue-500"
 		></textarea>
 	</div>
 
 	<!-- Status Messages -->
 	{#if donationStatus}
-		<div class="p-3 rounded-lg {donationStatus.type === 'success' ? 'bg-green-50 text-green-800 border border-green-200' : 'bg-red-50 text-red-800 border border-red-200'}">
+		<div
+			class="rounded-lg p-3 {donationStatus.type === 'success'
+				? 'border border-green-200 bg-green-50 text-green-800'
+				: 'border border-red-200 bg-red-50 text-red-800'}"
+		>
 			{donationStatus.message}
 		</div>
 	{/if}
@@ -149,13 +161,23 @@
 	<button
 		onclick={handleDonation}
 		disabled={isProcessing}
-		class="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+		class="w-full rounded-lg bg-green-600 px-4 py-3 font-medium text-white transition-colors hover:bg-green-700 disabled:cursor-not-allowed disabled:opacity-50"
 	>
 		{#if isProcessing}
 			<span class="flex items-center justify-center">
-				<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-					<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-					<path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+				<svg
+					class="mr-3 -ml-1 h-5 w-5 animate-spin text-white"
+					xmlns="http://www.w3.org/2000/svg"
+					fill="none"
+					viewBox="0 0 24 24"
+				>
+					<circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"
+					></circle>
+					<path
+						class="opacity-75"
+						fill="currentColor"
+						d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+					></path>
 				</svg>
 				Processing...
 			</span>
@@ -164,7 +186,7 @@
 		{/if}
 	</button>
 
-	<p class="text-xs text-gray-500 text-center">
+	<p class="text-center text-xs text-gray-500">
 		Your donation is anonymous and secure. You'll receive an SMS confirmation.
 	</p>
 </div>

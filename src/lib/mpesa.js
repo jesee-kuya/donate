@@ -1,20 +1,13 @@
-// Mpesa API integration
+// Mpesa API integration (Frontend talks to your backend only now)
 export class MpesaAPI {
   constructor() {
-    this.consumerKey = "your_consumer_key"
-    this.consumerSecret = "your_consumer_secret"
-    this.baseURL = "https://sandbox.safaricom.co.ke" // Use production URL for live
+    this.baseURL = "http://localhost:3000" // your own backend server
   }
 
   async getAccessToken() {
-    const auth = btoa(`${this.consumerKey}:${this.consumerSecret}`)
-
     try {
-      const response = await fetch(`${this.baseURL}/oauth/v1/generate?grant_type=client_credentials`, {
+      const response = await fetch(`${this.baseURL}/api/token`, {
         method: "GET",
-        headers: {
-          Authorization: `Basic ${auth}`,
-        },
       })
 
       const data = await response.json()
@@ -26,40 +19,22 @@ export class MpesaAPI {
   }
 
   async initiateSTKPush(phoneNumber, amount, accountReference, transactionDesc) {
-    const accessToken = await this.getAccessToken()
-    const timestamp = new Date()
-      .toISOString()
-      .replace(/[^0-9]/g, "")
-      .slice(0, -3)
-    const shortCode = "174379" // Test shortcode
-    const passkey = "bfb279f9aa9bdbcf158e97dd71a467cd2e0c893059b10f78e6b72ada1ed2c919"
-    const password = btoa(shortCode + passkey + timestamp)
-
-    const payload = {
-      BusinessShortCode: shortCode,
-      Password: password,
-      Timestamp: timestamp,
-      TransactionType: "CustomerPayBillOnline",
-      Amount: amount,
-      PartyA: phoneNumber,
-      PartyB: shortCode,
-      PhoneNumber: phoneNumber,
-      CallBackURL: "https://your-domain.com/api/mpesa/callback",
-      AccountReference: accountReference,
-      TransactionDesc: transactionDesc,
-    }
-
     try {
-      const response = await fetch(`${this.baseURL}/mpesa/stkpush/v1/processrequest`, {
+      const response = await fetch(`${this.baseURL}/api/stkpush`, {
         method: "POST",
         headers: {
-          Authorization: `Bearer ${accessToken}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify({
+          phoneNumber,
+          amount,
+          accountReference,
+          transactionDesc,
+        }),
       })
 
-      return await response.json()
+      const result = await response.json()
+      return result
     } catch (error) {
       console.error("Error initiating STK push:", error)
       throw error
