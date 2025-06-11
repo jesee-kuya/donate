@@ -1,5 +1,2 @@
-export interface Project {
-    id: string;
-    title: string;
-    description: string;
-}
+// src/lib/types.ts
+export type NavLink = { href: string; label: string };
