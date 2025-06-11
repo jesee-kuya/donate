@@ -1,10 +1,10 @@
-<script>
+<script lang="ts">
 	import { onMount } from 'svelte';
 	import { db } from '$lib/db.js';
 	import Header from '$lib/components/header.svelte';
 
-	let projects = $state([]);
-	let donations = $state([]);
+	let projects = $state<any[]>([]);
+	let donations = $state<any[]>([]);
 	let stats = $state({
 		totalProjects: 0,
 		totalDonations: 0,
@@ -19,16 +19,18 @@
 	function loadData() {
 		projects = db.projects.getAll();
 		donations = db.donations.getAll();
-		
+
 		stats = {
 			totalProjects: projects.length,
 			totalDonations: donations.length,
 			totalAmount: donations.reduce((sum, d) => sum + d.amount, 0),
-			avgDonation: donations.length > 0 ? donations.reduce((sum, d) => sum + d.amount, 0) / donations.length : 0
+			avgDonation: donations.length > 0
+				? donations.reduce((sum, d) => sum + d.amount, 0) / donations.length
+				: 0
 		};
 	}
 
-	function formatCurrency(amount) {
+	function formatCurrency(amount: number): string {
 		return new Intl.NumberFormat('en-KE', {
 			style: 'currency',
 			currency: 'KES',
@@ -36,7 +38,7 @@
 		}).format(amount);
 	}
 
-	function formatDate(dateString) {
+	function formatDate(dateString: string): string {
 		return new Date(dateString).toLocaleDateString('en-KE', {
 			year: 'numeric',
 			month: 'short',
@@ -46,6 +48,7 @@
 		});
 	}
 </script>
+
 
 <svelte:head>
 	<title>Admin Dashboard - DonateKenya</title>
