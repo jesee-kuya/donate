@@ -1,9 +1,12 @@
+// MpesaAPI.ts
 export class MpesaAPI {
+  baseURL: string
+
   constructor() {
-    this.baseURL = "http://localhost:3000"
+    this.baseURL = "http://localhost:3000" // your backend server
   }
 
-  async getAccessToken() {
+  async getAccessToken(): Promise<string> {
     try {
       const response = await fetch(`${this.baseURL}/api/token`, {
         method: "GET",
@@ -17,7 +20,12 @@ export class MpesaAPI {
     }
   }
 
-  async initiateSTKPush(phoneNumber, amount, accountReference, transactionDesc) {
+  async initiateSTKPush(
+    phoneNumber: string,
+    amount: number,
+    accountReference: string,
+    transactionDesc: string
+  ): Promise<any> {
     try {
       const response = await fetch(`${this.baseURL}/api/stkpush`, {
         method: "POST",
