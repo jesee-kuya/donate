@@ -51,7 +51,7 @@
 
 
 <svelte:head>
-	<title>Admin Dashboard - DonateKenya</title>
+	<title>Admin Dashboard - Donate</title>
 </svelte:head>
 
 <Header />

@@ -20,7 +20,7 @@
 
 
 <svelte:head>
-	<title>DonateKenya - Support Social Projects</title>
+	<title>Donate - Support Social Projects</title>
 	<meta name="description" content="Anonymously donate to social projects in Kenya. Support education, healthcare, technology, and agriculture initiatives." />
 </svelte:head>
 

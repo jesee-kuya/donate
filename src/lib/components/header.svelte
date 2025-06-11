@@ -9,7 +9,7 @@
 				<div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
 					<span class="text-white font-bold text-sm">DK</span>
 				</div>
-				<a href="/" class="text-xl font-bold text-gray-900">DonateKenya</a>
+				<a href="/" class="text-xl font-bold text-gray-900">Donate</a>
 			</div>
 			
 			<nav class="hidden md:flex items-center space-x-6">

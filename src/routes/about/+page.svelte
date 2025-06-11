@@ -3,14 +3,14 @@
 </script>
 
 <svelte:head>
-	<title>About - DonateKenya</title>
+	<title>About - Donate</title>
 </svelte:head>
 
 <Header />
 
 <div class="container mx-auto px-4 py-8">
 	<div class="max-w-4xl mx-auto">
-		<h1 class="text-4xl font-bold text-gray-900 mb-8 text-center">About DonateKenya</h1>
+		<h1 class="text-4xl font-bold text-gray-900 mb-8 text-center">About Donate</h1>
 		
 		<div class="prose prose-lg mx-auto">
 			<p class="text-xl text-gray-600 mb-8 text-center">
@@ -52,7 +52,7 @@
 			<div class="bg-gray-50 rounded-lg p-8 mb-8">
 				<h2 class="text-2xl font-bold text-gray-900 mb-4">Our Mission</h2>
 				<p class="text-gray-700 mb-4">
-					DonateKenya was created to bridge the gap between generous hearts and meaningful social projects across Kenya. 
+					Donate was created to bridge the gap between generous hearts and meaningful social projects across Kenya. 
 					We believe that everyone deserves the opportunity to make a positive impact, regardless of the size of their contribution.
 				</p>
 				<p class="text-gray-700">
