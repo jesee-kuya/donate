@@ -1,34 +1,72 @@
-<script lang="ts">
-    import ProjectCard from '$lib/components/ProjectCard.svelte';
-    import DonationModal from '$lib/components/DonationModal.svelte';
-    import type { Project } from '$lib/types';
-  
-    let projects: Project[] = [
-      { id: 'clean-water', title: 'Clean Water Initiative', description: 'Provide clean water to villages', totalRaised: 1200 },
-      { id: 'school-kits', title: 'School Kits for Kids', description: 'Supply school kits to underprivileged children', totalRaised: 800 },
-      { id: 'tree-planting', title: 'Urban Tree Planting', description: 'Plant trees in city parks', totalRaised: 450 }
-    ];
-  
-    let selected: Project | null = null;
-  
-    function openModal(project: Project) {
-      selected = project;
-    }
-  
-    function closeModal() {
-      selected = null;
-    }
-  </script>
-  
-  <h2 class="text-2xl font-bold mb-4">Our Projects</h2>
-  <div id="project-list" class="project-grid">
-    {#each projects as project (project.id)}
-      <ProjectCard {project} onSelect={openModal} />
-    {/each}
-  </div>
-  
-  {#if selected}
-    <!-- Pass the selected project by name -->
-    <DonationModal project={selected} onClose={closeModal} />
-  {/if}
-  
+<script>
+	import { onMount } from 'svelte';
+	import { db } from '$lib/db.js';
+	import ProjectCard from '$lib/components/project-card.svelte';
+	import Header from '$lib/components/header.svelte';
+
+	let projects = $state([]);
+	let selectedCategory = $state('all');
+	let categories = $state(['all', 'Education', 'Healthcare', 'Technology', 'Agriculture']);
+
+	onMount(() => {
+		projects = db.projects.getAll();
+	});
+
+	const filteredProjects = $derived(
+		selectedCategory === 'all' 
+			? projects 
+			: projects.filter(p => p.category === selectedCategory)
+	);
+</script>
+
+<svelte:head>
+	<title>DonateKenya - Support Social Projects</title>
+	<meta name="description" content="Anonymously donate to social projects in Kenya. Support education, healthcare, technology, and agriculture initiatives." />
+</svelte:head>
+
+<Header />
+
+<div class="container mx-auto px-4 py-8">
+	<!-- Hero Section -->
+	<div class="text-center mb-12">
+		<h1 class="text-4xl md:text-6xl font-bold text-gray-900 mb-4">
+			Make a Difference Today
+		</h1>
+		<p class="text-xl text-gray-600 max-w-3xl mx-auto mb-8">
+			Support meaningful social projects across Kenya. Every donation, no matter the size, 
+			creates lasting impact in communities that need it most.
+		</p>
+		<div class="bg-green-50 border border-green-200 rounded-lg p-4 max-w-md mx-auto">
+			<p class="text-green-800 font-medium">✓ 100% Anonymous Donations</p>
+			<p class="text-green-800 font-medium">✓ Secure Mpesa Payments</p>
+			<p class="text-green-800 font-medium">✓ Direct Impact Tracking</p>
+		</div>
+	</div>
+
+	<!-- Category Filter -->
+	<div class="flex flex-wrap justify-center gap-2 mb-8">
+		{#each categories as category}
+			<button
+				class="px-4 py-2 rounded-full border transition-colors {selectedCategory === category 
+					? 'bg-blue-600 text-white border-blue-600' 
+					: 'bg-white text-gray-700 border-gray-300 hover:border-blue-300'}"
+				onclick={() => selectedCategory = category}
+			>
+				{category === 'all' ? 'All Projects' : category}
+			</button>
+		{/each}
+	</div>
+
+	<!-- Projects Grid -->
+	<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+		{#each filteredProjects as project (project.id)}
+			<ProjectCard {project} />
+		{/each}
+	</div>
+
+	{#if filteredProjects.length === 0}
+		<div class="text-center py-12">
+			<p class="text-gray-500 text-lg">No projects found in this category.</p>
+		</div>
+	{/if}
+</div>

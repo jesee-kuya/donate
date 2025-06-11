@@ -1,10 +1,12 @@
 <script lang="ts">
-    import '../app.css'; 
-    import Navbar from '$lib/components/Navbar.svelte';
-  </script>
-  
-  <Navbar />
-  <main id="app-container">
-    <slot />
-  </main>
-  
+	import '../app.css';
+	interface Props {
+		children?: import('svelte').Snippet;
+	}
+
+	let { children }: Props = $props();
+</script>
+
+<main class="min-h-screen">
+	{@render children?.()}
+</main>
