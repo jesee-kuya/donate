@@ -1,4 +1,4 @@
-<script>
+<script lang="ts">
 	import { page } from '$app/stores';
 	import { onMount } from 'svelte';
 	import { db } from '$lib/db.js';
@@ -6,17 +6,23 @@
 	import Header from '$lib/components/header.svelte';
 	import DonationForm from '$lib/components/donation-form.svelte';
 
-	let project = $state(null);
-	let donations = $state([]);
-	let showDonationForm = $state(false);
+	import { get } from 'svelte/store';
+
+	let project: any = null;
+	let donations: any[] = [];
+	let showDonationForm = false;
+
+	// Reactive page params
+	let projectId: string;
+
+	projectId = $page.params.id;
 
 	onMount(() => {
-		const projectId = $page.params.id;
 		project = db.projects.getById(projectId);
 		donations = db.donations.getByProject(projectId);
 	});
 
-	function formatCurrency(amount) {
+	function formatCurrency(amount: number): string {
 		return new Intl.NumberFormat('en-KE', {
 			style: 'currency',
 			currency: 'KES',
@@ -24,53 +30,55 @@
 		}).format(amount);
 	}
 
-	const progressPercentage = $derived(
-		project ? Math.min((project.current_amount / project.target_amount) * 100, 100) : 0
-	);
+	// Reactive percentage calculation
+	$: progressPercentage = project
+		? Math.min((project.current_amount / project.target_amount) * 100, 100)
+		: 0;
 </script>
 
 <svelte:head>
-	<title>{project?.title || 'Project'} - DonateKenya</title>
+	<title>{project?.title || 'Project'} - Donate</title>
 </svelte:head>
 
 <Header />
 
 {#if project}
 	<div class="container mx-auto px-4 py-8">
-		<div class="max-w-4xl mx-auto">
+		<div class="mx-auto max-w-4xl">
 			<!-- Back Button -->
-			<a href="/" class="inline-flex items-center text-blue-600 hover:text-blue-800 mb-6">
-				<svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+			<a href="/" class="mb-6 inline-flex items-center text-blue-600 hover:text-blue-800">
+				<svg class="mr-2 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"
+					></path>
 				</svg>
 				Back to Projects
 			</a>
 
-			<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+			<div class="grid grid-cols-1 gap-8 lg:grid-cols-3">
 				<!-- Main Content -->
 				<div class="lg:col-span-2">
-					<img 
-						src={project.image_url || "/placeholder.svg"} 
+					<img
+						src={project.image_url || '/placeholder.svg'}
 						alt={project.title}
-						class="w-full h-64 object-cover rounded-lg mb-6"
+						class="mb-6 h-64 w-full rounded-lg object-cover"
 					/>
-					
+
 					<div class="mb-4">
-						<span class="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
+						<span class="rounded-full bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800">
 							{project.category}
 						</span>
 					</div>
-					
-					<h1 class="text-3xl font-bold text-gray-900 mb-4">{project.title}</h1>
-					<p class="text-gray-700 text-lg leading-relaxed mb-8">{project.description}</p>
-					
+
+					<h1 class="mb-4 text-3xl font-bold text-gray-900">{project.title}</h1>
+					<p class="mb-8 text-lg leading-relaxed text-gray-700">{project.description}</p>
+
 					<!-- Recent Donations -->
-					<div class="bg-gray-50 rounded-lg p-6">
-						<h3 class="text-lg font-semibold mb-4">Recent Donations</h3>
+					<div class="rounded-lg bg-gray-50 p-6">
+						<h3 class="mb-4 text-lg font-semibold">Recent Donations</h3>
 						{#if donations.length > 0}
 							<div class="space-y-3">
 								{#each donations.slice(0, 5) as donation}
-									<div class="flex items-center justify-between bg-white p-3 rounded">
+									<div class="flex items-center justify-between rounded bg-white p-3">
 										<div>
 											<p class="font-medium">Anonymous Donor</p>
 											<p class="text-sm text-gray-500">
@@ -91,36 +99,36 @@
 
 				<!-- Donation Sidebar -->
 				<div class="lg:col-span-1">
-					<div class="bg-white rounded-lg shadow-lg p-6 sticky top-6">
+					<div class="sticky top-6 rounded-lg bg-white p-6 shadow-lg">
 						<div class="mb-6">
-							<div class="flex justify-between text-sm text-gray-600 mb-2">
+							<div class="mb-2 flex justify-between text-sm text-gray-600">
 								<span>Raised</span>
 								<span>{Math.round(progressPercentage)}% of goal</span>
 							</div>
-							<div class="text-2xl font-bold text-gray-900 mb-1">
+							<div class="mb-1 text-2xl font-bold text-gray-900">
 								{formatCurrency(project.current_amount)}
 							</div>
-							<div class="text-gray-600 mb-3">
+							<div class="mb-3 text-gray-600">
 								of {formatCurrency(project.target_amount)} goal
 							</div>
-							<div class="w-full bg-gray-200 rounded-full h-3">
-								<div 
-									class="bg-green-500 h-3 rounded-full transition-all duration-300"
+							<div class="h-3 w-full rounded-full bg-gray-200">
+								<div
+									class="h-3 rounded-full bg-green-500 transition-all duration-300"
 									style="width: {progressPercentage}%"
 								></div>
 							</div>
 						</div>
 
 						<div class="mb-6">
-							<p class="text-sm text-gray-600 mb-2">
+							<p class="mb-2 text-sm text-gray-600">
 								<strong>{donations.length}</strong> donations
 							</p>
 						</div>
 
 						{#if !showDonationForm}
 							<button
-								onclick={() => showDonationForm = true}
-								class="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors font-medium text-lg"
+								onclick={() => (showDonationForm = true)}
+								class="w-full rounded-lg bg-blue-600 px-4 py-3 text-lg font-medium text-white transition-colors hover:bg-blue-700"
 							>
 								Donate Now
 							</button>
@@ -128,7 +136,7 @@
 							<DonationForm {project} />
 						{/if}
 
-						<div class="mt-4 text-xs text-gray-500 text-center">
+						<div class="mt-4 text-center text-xs text-gray-500">
 							<p>✓ Secure Mpesa Payment</p>
 							<p>✓ 100% Anonymous</p>
 							<p>✓ Instant Processing</p>
@@ -142,7 +150,7 @@
 	<div class="container mx-auto px-4 py-8">
 		<div class="text-center">
 			<h1 class="text-2xl font-bold text-gray-900">Project not found</h1>
-			<a href="/" class="text-blue-600 hover:text-blue-800 mt-4 inline-block">
+			<a href="/" class="mt-4 inline-block text-blue-600 hover:text-blue-800">
 				Return to projects
 			</a>
 		</div>
