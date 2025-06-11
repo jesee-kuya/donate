@@ -1,9 +1,8 @@
-// MpesaAPI.ts
 export class MpesaAPI {
   baseURL: string
 
   constructor() {
-    this.baseURL = "http://localhost:3000" // your backend server
+    this.baseURL = "http://localhost:3000"
   }
 
   async getAccessToken(): Promise<string> {
