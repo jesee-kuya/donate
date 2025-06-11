@@ -1,23 +1,23 @@
-<script>
+<script lang="ts">
 	import { onMount } from 'svelte';
 	import { db } from '$lib/db.js';
 	import ProjectCard from '$lib/components/project-card.svelte';
 	import Header from '$lib/components/header.svelte';
 
-	let projects = $state([]);
-	let selectedCategory = $state('all');
-	let categories = $state(['all', 'Education', 'Healthcare', 'Technology', 'Agriculture']);
+	let projects: any[] = [];
+	let selectedCategory: string = 'all';
+	let categories: string[] = ['all', 'Education', 'Healthcare', 'Technology', 'Agriculture'];
 
 	onMount(() => {
 		projects = db.projects.getAll();
 	});
 
-	const filteredProjects = $derived(
-		selectedCategory === 'all' 
-			? projects 
-			: projects.filter(p => p.category === selectedCategory)
-	);
+	// Reactive derived value
+	$: filteredProjects = selectedCategory === 'all'
+		? projects
+		: projects.filter(p => p.category === selectedCategory);
 </script>
+
 
 <svelte:head>
 	<title>DonateKenya - Support Social Projects</title>
