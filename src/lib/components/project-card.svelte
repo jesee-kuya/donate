@@ -1,9 +1,9 @@
-<script>
+<script lang="ts">
 	let { project } = $props();
-	
+
 	const progressPercentage = Math.min((project.current_amount / project.target_amount) * 100, 100);
-	
-	function formatCurrency(amount) {
+
+	function formatCurrency(amount: number): string {
 		return new Intl.NumberFormat('en-KE', {
 			style: 'currency',
 			currency: 'KES',
@@ -11,6 +11,7 @@
 		}).format(amount);
 	}
 </script>
+
 
 <div class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
 	<img 
