@@ -1,7 +1,6 @@
-// Mpesa API integration (Frontend talks to your backend only now)
 export class MpesaAPI {
   constructor() {
-    this.baseURL = "http://localhost:3000" // your own backend server
+    this.baseURL = "http://localhost:3000"
   }
 
   async getAccessToken() {
